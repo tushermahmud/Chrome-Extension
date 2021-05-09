@@ -16,43 +16,31 @@ console.log(firebase);
 var db = firebase.firestore();
 
 var db = firebase.firestore();
-// window.onload = (event) => {
-//     let location = window.location.href;
-//     console.log(location);
-//     let dateTime = new Date("Jul 12 2011");
-//     console.log(dateTime);
-//     db.collection("links")
-//         .doc("LA")
-//         .set({
-//             link: location,
-//             date: dateTime,
-//         })
-//         .then(function() {
-//             console.log("Document successfully written!");
-//         })
-//         .catch(function(error) {
-//             console.error("Error writing document: ", error);
-//         });
-// };
 
 chrome.runtime.onMessage.addListener((msg, sender, resp) => {
     if (msg.command == "post") {
-        chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
-            let saveUrl = tabs[0].url;
+        chrome.identity.getProfileUserInfo(function(userInfo) {
+            console.log(userInfo);
+            chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
+                console.log(tabs[0].url);
 
-            console.log(new Date());
-            db.collection("links")
-                .doc("extension")
-                .set({
-                    link: saveUrl,
-                    date: new Date(),
-                })
-                .then(function() {
-                    console.log("Document successfully written!");
-                })
-                .catch(function(error) {
-                    console.error("Error writing document: ", error);
-                });
+                let saveUrl = tabs[0].url;
+                let id = Math.floor(Math.random() * 1000009 + 1);
+                db.collection("links")
+                    .doc(id.toString())
+                    .set({
+                        link: saveUrl,
+                        date: new Date(),
+                        email: userInfo.email,
+                    })
+                    .then(function() {
+                        console.log("Document successfully written!");
+                    })
+                    .catch(function(error) {
+                        console.error("Error writing document: ", error);
+                    });
+                console.log(userInfo);
+            });
         });
     }
     if (msg.command == "fetch") {
